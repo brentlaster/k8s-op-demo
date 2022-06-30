@@ -55,11 +55,10 @@ var nextPort = 0
 
 func (r *RoarAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = context.Background()
-	// _ = r.Log.WithValues("roarapp", req.NamespacedName)
 
-	//	log := r.Log.WithValues("roarapp", req.NamespacedName)
+	log := ctrl.Log.WithValues("roarapp", req.NamespacedName)
 
-	// log.Info("Reconciling instance")
+	log.Info("Reconciling instance")
 
 	// Fetch the roarapp instance
 	instance := &roarappv1alpha1.RoarApp{}
@@ -111,22 +110,22 @@ func (r *RoarAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		instance.Status = status
 		err = r.Client.Status().Update(context.TODO(), instance)
 		if err != nil {
-			//			log.Error(err, "Failed to update instance status")
+			log.Error(err, "Failed to update instance status")
 			return ctrl.Result{}, err
 		}
 	}
 
 	if numAvailable > instance.Spec.Replicas {
-		//		log.Info("Scaling down pods", "Currently available", numAvailable, "Required replicas", instance.Spec.Replicas)
+		log.Info("Scaling down pods", "Currently available", numAvailable, "Required replicas", instance.Spec.Replicas)
 		diff := numAvailable - instance.Spec.Replicas
 		dpods := available[:diff]
 		for _, dpod := range dpods {
 			err = r.Client.Delete(context.TODO(), &dpod)
 			if err != nil {
-				//				log.Error(err, "Failed to delete pod", "pod.name", dpod.Name)
+				log.Error(err, "Failed to delete pod", "pod.name", dpod.Name)
 				return ctrl.Result{}, err
 			}
-			//			log.Info("Scaling down corresponding service", "Pod", numAvailable, "Service", instance.Spec.Replicas)
+			log.Info("Scaling down corresponding service", "Pod", numAvailable, "Service", instance.Spec.Replicas)
 			strPort := dpod.Name[strings.LastIndex(dpod.Name, "-")+1:]
 			sName := instance.Name + "-service-" + strPort
 			//found := &appsv1.Deployment{}
@@ -149,7 +148,7 @@ func (r *RoarAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	if numAvailable < instance.Spec.Replicas {
-		//		log.Info("Scaling up pods", "Currently available", numAvailable, "Required replicas", instance.Spec.Replicas)
+		log.Info("Scaling up pods", "Currently available", numAvailable, "Required replicas", instance.Spec.Replicas)
 		// Define a new Pod object
 		pod := newPodForCR(instance)
 		// Set instance instance as the owner and controller
@@ -169,7 +168,7 @@ func (r *RoarAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		}
 		err = r.Client.Create(context.TODO(), svc)
 		if err != nil {
-			//			log.Error(err, "Failed to create service", "svc.name", svc.Name)
+			log.Error(err, "Failed to create service", "svc.name", svc.Name)
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{Requeue: true}, nil

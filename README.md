@@ -1,8 +1,8 @@
-# ops
-// TODO(user): Add simple overview of use/purpose
+# k8s-op-demo
+Basic example of code for a Kubernetes operator implementation
 
 ## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+This code is an example for training on how to create a Kubernetes operator using the toolkit.
 
 ## Getting Started
 You’ll need a Kubernetes cluster to run against. You can use [KIND](https://sigs.k8s.io/kind) to get a local cluster for testing, or run against a remote cluster.
